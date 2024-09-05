@@ -1,0 +1,96 @@
+name: create-upstream-pr
+
+on:
+  repository_dispatch:
+    types: [ metanorma/packed-mn ]
+  workflow_dispatch:
+    inputs:
+      next_version:
+        description: |
+          Next release version, or git tag
+        required: true
+
+env:
+  BASE_VERSION: 1.10.5
+
+jobs:
+  sync-update:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.METANORMA_CI_PAT_TOKEN }}
+
+    - name: Add writable remote
+      run: |
+        git config --global user.name "metanorma-ci"
+        git config --global user.email "metanorma-ci@users.noreply.github.com"
+
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.METANORMA_CI_PAT_TOKEN }}
+        repository: metanorma/winget-pkgs
+        path: winget-pkgs
+
+    - name: Add upstream repo
+      run: |
+        git remote add upstream https://github.com/microsoft/winget-pkgs.git
+        git fetch upstream
+        git checkout master
+        git merge upstream/master --allow-unrelated-histories
+      working-directory: winget-pkgs
+
+    - name: Sync fork with upstream
+      run: |
+        git merge upstream/master
+        git push origin master
+      working-directory: winget-pkgs
+
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.1'
+
+    - name: Update package version and SHA256
+      env:
+        METANORMA_CLI_TAG: ${{ github.event.client_payload.ref || github.event.inputs.next_version }}
+      run: |
+        set -x
+        curl -LO --retry 3 https://raw.githubusercontent.com/metanorma/metanorma-build-scripts/main/gemver-to-semver.rb && chmod +x gemver-to-semver.rb
+        NEW_VERSION=$(./gemver-to-semver.rb --chocolatey ${METANORMA_CLI_TAG#*/v})
+        NEW_SHA256=$(curl -L --retry 3 https://github.com/metanorma/packed-mn/releases/download/v${NEW_VERSION}/metanorma-windows-x86_64.zip.sha256.txt)
+
+        PACKAGE_PATH="manifests/m/Metanorma/Metanorma/${NEW_VERSION}
+        cp -p manifests/m/Metanorma/Metanorma/${{ env.BASE_VERSION }} ${PACKAGE_PATH}
+        
+        sed -i "s/PackageVersion:.*/PackageVersion: $NEW_VERSION/" $PACKAGE_PATH
+        sed -i "s|/v${{ env.BASE_VERSION }}/|/v${NEW_VERSION}/|" $PACKAGE_PATH
+        sed -i "s/InstallerSha256:.*/InstallerSha256: $NEW_SHA256/" $PACKAGE_PATH
+
+        echo "PACKAGE_PATH=${PACKAGE_PATH}" >> $GITHUB_ENV
+        echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
+      working-directory: winget-pkgs
+
+    - name: Commit changes
+      run: |
+        git checkout -b release/v$NEW_VERSION
+        git add $PACKAGE_PATH
+        git commit -m "New version: Metanorma.Metanorma version $NEW_VERSION"
+      working-directory: winget-pkgs
+
+    - name: Assess changes
+      run: |
+        # git push origin release/v$NEW_VERSION
+        git show
+      working-directory: winget-pkgs
+
+    # - name: Create Pull Request
+    #   uses: peter-evans/create-pull-request@v5
+    #   with:
+    #     token: ${{ secrets.METANORMA_CI_PAT_TOKEN }}
+    #     path: winget-pkgs
+    #     title: "New version: Metanorma.Metanorma version ${{ env.NEW_VERSION }}"
+    #     branch: release/v$NEW_VERSION
+
