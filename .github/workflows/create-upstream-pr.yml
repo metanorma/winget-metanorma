@@ -75,22 +75,22 @@ jobs:
 
     - name: Commit changes
       run: |
-        git checkout -b release/v$NEW_VERSION
+        git checkout -b release/metanorma-v$NEW_VERSION
         git add $PACKAGE_PATH
         git commit -m "New version: Metanorma.Metanorma version $NEW_VERSION"
       working-directory: winget-pkgs
 
     - name: Assess changes
       run: |
-        # git push origin release/v$NEW_VERSION
+        git push origin release/metanorma-v$NEW_VERSION
         git show
       working-directory: winget-pkgs
 
-    # - name: Create Pull Request
-    #   uses: peter-evans/create-pull-request@v5
-    #   with:
-    #     token: ${{ secrets.METANORMA_CI_PAT_TOKEN }}
-    #     path: winget-pkgs
-    #     title: "New version: Metanorma.Metanorma version ${{ env.NEW_VERSION }}"
-    #     branch: release/v$NEW_VERSION
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.METANORMA_CI_PAT_TOKEN }}
+        path: winget-pkgs
+        title: "New version: Metanorma.Metanorma version ${{ env.NEW_VERSION }}"
+        branch: "release/metanorma-v${{ env.NEW_VERSION }}"
 
