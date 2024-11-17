@@ -63,11 +63,11 @@ jobs:
         NEW_SHA256=$(curl -L --retry 3 https://github.com/metanorma/packed-mn/releases/download/v${NEW_VERSION}/metanorma-windows-x86_64.zip.sha256.txt | tr -d '\r\n')
 
         PACKAGE_PATH="manifests/m/Metanorma/Metanorma/${NEW_VERSION}"
-        cp -p manifests/m/Metanorma/Metanorma/${{ env.BASE_VERSION }} ${PACKAGE_PATH}
-        
-        sed -i "s/PackageVersion:.*/PackageVersion: $NEW_VERSION/" $PACKAGE_PATH
-        sed -i "s|/v${{ env.BASE_VERSION }}/|/v${NEW_VERSION}/|" $PACKAGE_PATH
-        sed -i "s/InstallerSha256:.*/InstallerSha256: $NEW_SHA256/" $PACKAGE_PATH
+        cp -r manifests/m/Metanorma/Metanorma/${{ env.BASE_VERSION }} ${PACKAGE_PATH}
+
+        find $PACKAGE_PATH -type f -exec sed -i "s/PackageVersion:.*/PackageVersion: $NEW_VERSION/" {} +
+        find $PACKAGE_PATH -type f -exec sed -i "s|/v${{ env.BASE_VERSION }}/|/v${NEW_VERSION}/|" {} +
+        find $PACKAGE_PATH -type f -exec sed -i "s/InstallerSha256:.*/InstallerSha256: $NEW_SHA256/" {} +
 
         echo "PACKAGE_PATH=${PACKAGE_PATH}" >> $GITHUB_ENV
         echo "NEW_VERSION=${NEW_VERSION}" >> $GITHUB_ENV
