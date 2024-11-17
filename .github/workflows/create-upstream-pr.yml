@@ -60,7 +60,7 @@ jobs:
         set -x
         curl -LO --retry 3 https://raw.githubusercontent.com/metanorma/metanorma-build-scripts/main/gemver-to-semver.rb && chmod +x gemver-to-semver.rb
         NEW_VERSION=$(./gemver-to-semver.rb --chocolatey ${METANORMA_CLI_TAG#*/v})
-        NEW_SHA256=$(curl -L --retry 3 https://github.com/metanorma/packed-mn/releases/download/v${NEW_VERSION}/metanorma-windows-x86_64.zip.sha256.txt)
+        NEW_SHA256=$(curl -L --retry 3 https://github.com/metanorma/packed-mn/releases/download/v${NEW_VERSION}/metanorma-windows-x86_64.zip.sha256.txt | tr -d '\n')
 
         PACKAGE_PATH="manifests/m/Metanorma/Metanorma/${NEW_VERSION}
         cp -p manifests/m/Metanorma/Metanorma/${{ env.BASE_VERSION }} ${PACKAGE_PATH}
