@@ -1,0 +1,19 @@
+= winget-metanorma
+
+This repository is a downstream project that listens for `repository_dispatch` events triggered by the main Metanorma repository.
+It automates the creation and release of Metanorma packages for Microsoft Winget, allowing users to install Metanorma via the Windows Package Manager.
+
+== How It Works
+
+1. The main Metanorma repositories triggers a `repository_dispatch` event when a new release is published.
+2. This repository listens for those events and executes a workflow to:
+   - Submit the PR to Microsoft Winget repository
+
+== Repository Contents
+
+- `/.github/workflows/`: Contains the GitHub Actions workflows responsible for automating the packaging and release process.
+
+== See Also
+
+- Main Metanorma Repository: https://github.com/metanorma/metanorma
+- Winget Package Manager Documentation: https://learn.microsoft.com/en-us/windows/package-manager/
