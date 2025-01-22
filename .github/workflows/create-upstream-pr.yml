@@ -94,5 +94,5 @@ jobs:
         title: "New version: Metanorma.Metanorma version ${{ env.NEW_VERSION }}"
         branch: "release/metanorma-v${{ env.NEW_VERSION }}"
         base: master
-        commit-message: "New version: Metanorma.Metanorma version ${{ env.NEW_VERSION }}"
+        push-to-fork: microsoft/winget-pkgs
 
