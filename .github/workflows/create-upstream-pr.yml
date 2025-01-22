@@ -93,4 +93,6 @@ jobs:
         path: winget-pkgs
         title: "New version: Metanorma.Metanorma version ${{ env.NEW_VERSION }}"
         branch: "release/metanorma-v${{ env.NEW_VERSION }}"
+        base: master
+        commit-message: "New version: Metanorma.Metanorma version ${{ env.NEW_VERSION }}"
 
